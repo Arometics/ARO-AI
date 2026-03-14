@@ -98,7 +98,7 @@ body{background:#07070e;color:#e8e8f8;font-family:'Segoe UI',sans-serif;display:
 <div id="bt">
   <div id="ip">
     <img id="pi" src="" alt="">
-    <span>📎 ছবি সংযুক্ত</span>
+    <span>📎 ছবি সংযুক্ত — পাঠালে বিশ্লেষণ করা হবে</span>
     <button id="ri" onclick="removeImg()">×</button>
   </div>
   <div id="rb">
@@ -109,32 +109,32 @@ body{background:#07070e;color:#e8e8f8;font-family:'Segoe UI',sans-serif;display:
     <button class="ibtn" id="ib" onclick="document.getElementById('fi').click()" title="ছবি যোগ করো">📎</button>
     <input id="fi" type="file" accept="image/*" style="display:none" onchange="onFile(event)">
     <button class="ibtn" id="mb" onclick="toggleVoice()" title="ভয়েস মেসেজ">🎤</button>
-    <textarea id="tx" placeholder="যেকোনো প্রশ্ন করুন বা ছবি আপলোড করুন..." rows="1" oninput="upd(this)" onkeydown="kd(event)"></textarea>
+    <textarea id="tx" placeholder="প্রশ্ন লিখুন বা ছবি আপলোড করুন..." rows="1" oninput="upd(this)" onkeydown="kd(event)"></textarea>
     <button id="sb" onclick="send()">➤</button>
   </div>
   <div id="ht">Enter = পাঠাও · Shift+Enter = নতুন লাইন</div>
 </div>
 
 <script>
-const K = "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";
-const U = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_KEY = "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";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+
 const SYS = `তুমি একজন অত্যন্ত বিশ্বস্ত ও জ্ঞানী AI সহকারী। তোমার নাম Smart Chat AI।
 নিয়ম:
-1. কখনো ভুল তথ্য দেবে না — অনিশ্চিত হলে বলো "আমি নিশ্চিত নই"
-2. তথ্যসূত্র সবসময় উল্লেখ করো (Wikipedia, বৈজ্ঞানিক গবেষণা, বিশেষজ্ঞ মতামত)
-3. উত্তর সবসময় বিস্তারিত ও তথ্যবহুল হবে — সংক্ষিপ্ত উত্তর দেবে না
-4. সুন্দরভাবে সাজানো উত্তর দাও — শিরোনাম, বুলেট পয়েন্ট ব্যবহার করো
-5. বাংলায় প্রশ্ন হলে বাংলায়, ইংরেজিতে হলে ইংরেজিতে উত্তর দাও
-6. ছবি দিলে সেটা অত্যন্ত বিস্তারিতভাবে বিশ্লেষণ করো
-7. ক্ষতিকর বা মিথ্যা তথ্য দেবে না
-8. উত্তরের শেষে সংক্ষিপ্ত সারসংক্ষেপ দাও`;
+1. কখনো ভুল তথ্য দেবে না
+2. তথ্যসূত্র সবসময় উল্লেখ করো
+3. উত্তর সবসময় বিস্তারিত ও তথ্যবহুল হবে
+4. সুন্দরভাবে সাজানো উত্তর দাও
+5. বাংলায় প্রশ্ন হলে বাংলায় উত্তর দাও
+6. ক্ষতিকর বা মিথ্যা তথ্য দেবে না
+7. উত্তরের শেষে সারসংক্ষেপ দাও`;
 
 let H = [], imgB64 = null, imgMime = "image/jpeg", rec = false, ro = null;
 const fd = document.getElementById("fd");
 const tx = document.getElementById("tx");
 const sb = document.getElementById("sb");
 
-document.getElementById("wl").innerHTML = fmt("আসসালামুয়ালাইকুম! 👋 আমি **Smart Chat AI**\n\n✅ সঠিক ও নির্ভরযোগ্য তথ্য\n📚 তথ্যসূত্রসহ বিস্তারিত উত্তর\n📸 ছবি আপলোড করে প্রশ্ন করো\n🎤 ভয়েস মেসেজ দাও\n\n**যেকোনো প্রশ্ন করো — আমি সঠিক উত্তর দেবো!**");
+document.getElementById("wl").innerHTML = fmt("আসসালামুয়ালাইকুম! 👋 আমি **Smart Chat AI**\n\n✅ সঠিক ও নির্ভরযোগ্য তথ্য\n📚 তথ্যসূত্রসহ বিস্তারিত উত্তর\n📸 ছবি আপলোড করে প্রশ্ন করো\n🎤 ভয়েস মেসেজ দাও\n\n**যেকোনো প্রশ্ন করো!**");
 
 function setSug(el) {
   tx.value = el.textContent.replace(/^[^\s]+ /, '');
@@ -157,8 +157,8 @@ function fmt(text) {
 
 function inl(t) {
   return t
-    .replace(/\*\*([^*]+)\*\*/g, '<span class="bd">$1</span>')
-    .replace(/`([^`]+)`/g, '<span class="cd">$1</span>');
+    .replace(/\*\*([^*]+)\*\*/g,'<span class="bd">$1</span>')
+    .replace(/`([^`]+)`/g,'<span class="cd">$1</span>');
 }
 
 function addMsg(role, text, imgSrc) {
@@ -196,38 +196,72 @@ async function send() {
   if ((!text && !imgB64) || sb.disabled) return;
 
   const imgSrc = imgB64 ? document.getElementById("pi").src : null;
-  addMsg("u", text || "ছবি বিশ্লেষণ করো", imgSrc);
+  const userText = text || "এই ছবিটি বিশ্লেষণ করো";
+  addMsg("u", userText, imgSrc);
 
-  // Build message with or without image
-  let userContent;
-  if (imgB64) {
-    userContent = [
-      { type:"image_url", image_url:{ url:`data:${imgMime};base64,${imgB64}` } },
-      { type:"text", text: text || "এই ছবিটি বিস্তারিত বিশ্লেষণ করো" }
-    ];
-    H.push({ role:"user", content: userContent });
-  } else {
-    H.push({ role:"user", content: text });
-  }
+  // ছবি থাকলে টেক্সটে ব্যাখ্যা করে পাঠাই (Groq vision সাপোর্ট করে না)
+  // তাই ছবির base64 আলাদাভাবে handle করি
+  const savedImgB64 = imgB64;
+  const savedImgMime = imgMime;
 
   tx.value=""; removeImg(); upd(tx); showTyping(); sb.disabled=true; sb.className="";
 
   try {
-    const res = await fetch(U, {
-      method:"POST",
-      headers:{"Content-Type":"application/json","Authorization":"Bearer "+K},
-      body: JSON.stringify({
-        model: imgB64 ? "llama-4-scout-17b-16e-instruct" : "llama-3.3-70b-versatile",
-        messages: [{role:"system",content:SYS}, ...H],
-        max_tokens: 3000,
-        temperature: 0.3
-      })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data?.error?.message || "API Error: " + res.status);
-    const reply = data?.choices?.[0]?.message?.content || "উত্তর পাওয়া যায়নি।";
+    let reply = "";
+
+    if (savedImgB64) {
+      // ছবির জন্য: প্রথমে ছবি describe করার চেষ্টা করি
+      // Groq llama-4-scout দিয়ে vision
+      const visionMessages = [
+        { role: "system", content: SYS },
+        {
+          role: "user",
+          content: [
+            {
+              type: "image_url",
+              image_url: { url: `data:${savedImgMime};base64,${savedImgB64}` }
+            },
+            { type: "text", text: userText }
+          ]
+        }
+      ];
+
+      const res = await fetch(GROQ_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_KEY },
+        body: JSON.stringify({
+          model: "meta-llama/llama-4-scout-17b-16e-instruct",
+          messages: visionMessages,
+          max_tokens: 3000,
+          temperature: 0.3
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || "Vision API Error");
+      reply = data?.choices?.[0]?.message?.content || "উত্তর পাওয়া যায়নি।";
+      H.push({ role: "user", content: userText + " [ছবি বিশ্লেষণ করা হয়েছে]" });
+
+    } else {
+      // সাধারণ টেক্সট প্রশ্ন
+      H.push({ role: "user", content: userText });
+      const res = await fetch(GROQ_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + GROQ_KEY },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "system", content: SYS }, ...H],
+          max_tokens: 3000,
+          temperature: 0.3
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || "API Error");
+      reply = data?.choices?.[0]?.message?.content || "উত্তর পাওয়া যায়নি।";
+    }
+
     hideTyping(); addMsg("b", reply);
-    H.push({role:"assistant", content: reply});
+    H.push({ role: "assistant", content: reply });
+
   } catch(e) {
     hideTyping(); addMsg("b", "❌ সমস্যা হয়েছে: " + e.message);
   } finally {
